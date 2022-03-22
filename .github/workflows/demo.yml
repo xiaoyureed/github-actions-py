@@ -1,0 +1,56 @@
+# https://docs.github.com/cn/actions
+
+name: Python ci demo
+# on:
+#   - "push"
+on:
+  # schedule:
+  #   # 北京时间比Github所使用时区快8个小时
+  #   # 5 字段: min hour day_of_month month day_of_week
+  #   - cron: "* * * * *"
+  push:
+    branches:
+      - "main"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      # environment variables, 'matrix' is the env name
+      matrix:
+        python-version: ["3.9"]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Display py version
+        run: python -c "import sys; print(sys.version)"
+
+      - name: Install dependencies
+        # setuptools wheel 不必安装
+        run: |
+          python -m pip install --upgrade pip 
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Task exec
+        run: |
+          touch test.md
+      
+      - name: Commit
+        run: |
+          git config --local user.email 775000738@qq.com"
+          git config --local user.name "xiaoyu"
+          git add .
+          git commit -m "robot commit"
+          git pull --rebase
+
+      - name: Push
+        uses: ad-m/github-push-action@master
+        with: 
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: "main"
